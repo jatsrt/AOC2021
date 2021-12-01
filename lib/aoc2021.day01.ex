@@ -6,33 +6,9 @@ defmodule AOC2021.DAY01 do
 
     case open_file_contents("lib/aoc2021.day01.input") do
       {:ok, contents} ->
-        simple_answer_part_one =
-          contents |> Enum.chunk_every(2, 1, :discard) |> Enum.map(&count_it/1) |> Enum.sum()
+        generate_answers(contents)
 
-        Logger.info("The simple answer is part one: #{simple_answer_part_one}")
-
-        non_simple_answer_part_one = find_answer(contents, 0)
-
-        Logger.info("The non simple answer is part one: #{non_simple_answer_part_one}")
-
-        part_two_contents = contents |> Enum.chunk_every(3, 1, :discard) |> Enum.map(&Enum.sum/1)
-
-        simple_answer_part_two =
-          part_two_contents
-          |> Enum.chunk_every(2, 1, :discard)
-          |> Enum.map(&count_it/1)
-          |> Enum.sum()
-
-        Logger.info("The simple answer is part two: #{simple_answer_part_two}")
-
-        non_simple_answer_part_two = find_answer(part_two_contents, 0)
-
-        Logger.info("The non simple answer is part two: #{non_simple_answer_part_two}")
-
-        {:ok}
-
-      {:error, error} ->
-        Logger.error("Error reading file: #{error}")
+      {:error, _error} ->
         {:error}
     end
   end
@@ -47,8 +23,45 @@ defmodule AOC2021.DAY01 do
         {:ok, contents}
 
       {:error, error} ->
+        Logger.error("Error reading file: #{error}")
         {:error, error}
     end
+  end
+
+  def generate_answers(input) when is_list(input) do
+    {:ok, [part_one, part_two]} = generate_simple_answers(input)
+    Logger.info("Simple part one: #{part_one} part two: #{part_two}")
+
+    {:ok, [part_one, part_two]} = generate_non_simple_answers(input)
+    Logger.info("Non simple part one: #{part_one} part two: #{part_two}")
+
+    {:ok}
+  end
+
+  def generate_simple_answers(input) when is_list(input) do
+    part_one = input |> Enum.chunk_every(2, 1, :discard) |> Enum.map(&count_it/1) |> Enum.sum()
+
+    part_two =
+      input
+      |> Enum.chunk_every(3, 1, :discard)
+      |> Enum.map(&Enum.sum/1)
+      |> Enum.chunk_every(2, 1, :discard)
+      |> Enum.map(&count_it/1)
+      |> Enum.sum()
+
+    {:ok, [part_one, part_two]}
+  end
+
+  def generate_non_simple_answers(input) when is_list(input) do
+    windowed_input =
+      input
+      |> Enum.chunk_every(3, 1, :discard)
+      |> Enum.map(&Enum.sum/1)
+
+    part_one = find_answer(input, 0)
+    part_two = find_answer(windowed_input, 0)
+
+    {:ok, [part_one, part_two]}
   end
 
   def count_it([first, second]) when first < second, do: 1
