@@ -9,7 +9,7 @@ defmodule AOC2021.DAY02 do
         {:ok, depth, hp} = calculate(contents, 0, 0)
         Logger.info("Part One - Depth:#{depth} HP:#{hp} Result:#{hp * depth}")
 
-        {:ok, depth, hp, aim} = calculate_with_aim(contents, 0, 0, 0)
+        {:ok, depth, hp, aim} = calculate(contents, 0, 0, 0)
         Logger.info("Part Two - Aim:#{aim} Depth:#{depth} HP:#{hp} Resut:#{hp * depth}")
 
       {:error, _error} ->
@@ -42,14 +42,14 @@ defmodule AOC2021.DAY02 do
   def calculate([[d, a] | t], depth, hp) when d == :forward, do: calculate(t, depth, hp + a)
   def calculate([], depth, hp), do: {:ok, depth, hp}
 
-  def calculate_with_aim([[d, a] | t], depth, hp, aim) when d == :up,
-    do: calculate_with_aim(t, depth, hp, aim - a)
+  def calculate([[d, a] | t], depth, hp, aim) when d == :up,
+    do: calculate(t, depth, hp, aim - a)
 
-  def calculate_with_aim([[d, a] | t], depth, hp, aim) when d == :down,
-    do: calculate_with_aim(t, depth, hp, aim + a)
+  def calculate([[d, a] | t], depth, hp, aim) when d == :down,
+    do: calculate(t, depth, hp, aim + a)
 
-  def calculate_with_aim([[d, a] | t], depth, hp, aim) when d == :forward,
-    do: calculate_with_aim(t, depth + aim * a, hp + a, aim)
+  def calculate([[d, a] | t], depth, hp, aim) when d == :forward,
+    do: calculate(t, depth + aim * a, hp + a, aim)
 
-  def calculate_with_aim([], depth, hp, aim), do: {:ok, depth, hp, aim}
+  def calculate([], depth, hp, aim), do: {:ok, depth, hp, aim}
 end
