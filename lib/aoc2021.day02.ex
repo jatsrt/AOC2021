@@ -22,7 +22,12 @@ defmodule AOC2021.DAY02 do
 
     case File.read(path) do
       {:ok, input} ->
-        contents = input |> String.split("\n", trim: true) |> Enum.map(&String.split/1)
+        contents =
+          input
+          |> String.split("\n", trim: true)
+          |> Enum.map(&String.split/1)
+          |> Enum.map(fn [a, v] -> [a |> String.to_atom(), v |> String.to_integer()] end)
+
         Logger.info("Input Count: #{Enum.count(contents)}")
         {:ok, contents}
 
@@ -32,25 +37,19 @@ defmodule AOC2021.DAY02 do
     end
   end
 
-  def calculate([[d, a] | t], depth, hp) when d == "up",
-    do: calculate(t, depth - String.to_integer(a), hp)
-
-  def calculate([[d, a] | t], depth, hp) when d == "down",
-    do: calculate(t, depth + String.to_integer(a), hp)
-
-  def calculate([[d, a] | t], depth, hp) when d == "forward",
-    do: calculate(t, depth, hp + String.to_integer(a))
-
+  def calculate([[d, a] | t], depth, hp) when d == :up, do: calculate(t, depth - a, hp)
+  def calculate([[d, a] | t], depth, hp) when d == :down, do: calculate(t, depth + a, hp)
+  def calculate([[d, a] | t], depth, hp) when d == :forward, do: calculate(t, depth, hp + a)
   def calculate([], depth, hp), do: {:ok, depth, hp}
 
-  def calculate_with_aim([[d, a] | t], depth, hp, aim) when d == "up",
-    do: calculate_with_aim(t, depth, hp, aim - String.to_integer(a))
+  def calculate_with_aim([[d, a] | t], depth, hp, aim) when d == :up,
+    do: calculate_with_aim(t, depth, hp, aim - a)
 
-  def calculate_with_aim([[d, a] | t], depth, hp, aim) when d == "down",
-    do: calculate_with_aim(t, depth, hp, aim + String.to_integer(a))
+  def calculate_with_aim([[d, a] | t], depth, hp, aim) when d == :down,
+    do: calculate_with_aim(t, depth, hp, aim + a)
 
-  def calculate_with_aim([[d, a] | t], depth, hp, aim) when d == "forward",
-    do: calculate_with_aim(t, depth + aim * String.to_integer(a), hp + String.to_integer(a), aim)
+  def calculate_with_aim([[d, a] | t], depth, hp, aim) when d == :forward,
+    do: calculate_with_aim(t, depth + aim * a, hp + a, aim)
 
   def calculate_with_aim([], depth, hp, aim), do: {:ok, depth, hp, aim}
 end
