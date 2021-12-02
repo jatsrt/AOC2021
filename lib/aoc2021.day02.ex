@@ -37,18 +37,15 @@ defmodule AOC2021.DAY02 do
     end
   end
 
-  def calculate([[d, a] | t], depth, hp) when d == :up, do: calculate(t, depth - a, hp)
-  def calculate([[d, a] | t], depth, hp) when d == :down, do: calculate(t, depth + a, hp)
-  def calculate([[d, a] | t], depth, hp) when d == :forward, do: calculate(t, depth, hp + a)
+  def calculate([[:up, a] | t], depth, hp), do: calculate(t, depth - a, hp)
+  def calculate([[:down, a] | t], depth, hp), do: calculate(t, depth + a, hp)
+  def calculate([[:forward, a] | t], depth, hp), do: calculate(t, depth, hp + a)
   def calculate([], depth, hp), do: {:ok, depth, hp}
 
-  def calculate([[d, a] | t], depth, hp, aim) when d == :up,
-    do: calculate(t, depth, hp, aim - a)
+  def calculate([[:up, a] | t], depth, hp, aim), do: calculate(t, depth, hp, aim - a)
+  def calculate([[:down, a] | t], depth, hp, aim), do: calculate(t, depth, hp, aim + a)
 
-  def calculate([[d, a] | t], depth, hp, aim) when d == :down,
-    do: calculate(t, depth, hp, aim + a)
-
-  def calculate([[d, a] | t], depth, hp, aim) when d == :forward,
+  def calculate([[:forward, a] | t], depth, hp, aim),
     do: calculate(t, depth + aim * a, hp + a, aim)
 
   def calculate([], depth, hp, aim), do: {:ok, depth, hp, aim}
