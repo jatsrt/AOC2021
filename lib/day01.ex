@@ -4,7 +4,7 @@ defmodule AOC2021.DAY01 do
   def run() do
     Logger.info("AOC 2021 Day 1")
 
-    case open_file_contents("lib/aoc2021.day01.input") do
+    case open_file_contents("inputs/day01.input") do
       {:ok, contents} ->
         generate_answers(contents)
 

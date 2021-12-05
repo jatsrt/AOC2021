@@ -4,13 +4,15 @@ defmodule AOC2021.DAY02 do
   def run() do
     Logger.info("AOC 2021 Day 2")
 
-    case open_file_contents("lib/aoc2021.day02.input") do
+    case open_file_contents("inputs/day02.input") do
       {:ok, contents} ->
         {:ok, depth, hp} = calculate(contents, 0, 0)
         Logger.info("Part One - Depth:#{depth} HP:#{hp} Result:#{hp * depth}")
 
         {:ok, depth, hp, aim} = calculate(contents, 0, 0, 0)
         Logger.info("Part Two - Aim:#{aim} Depth:#{depth} HP:#{hp} Resut:#{hp * depth}")
+
+        {:ok}
 
       {:error, _error} ->
         {:error}
