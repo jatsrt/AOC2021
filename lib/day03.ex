@@ -2,7 +2,7 @@ defmodule AOC2021.DAY03 do
   require Logger
 
   def run() do
-    Logger.info("AOC 2021 Day 3 V2")
+    Logger.info("AOC 2021 Day 3")
 
     case open_file_contents("inputs/day03.input") do
       {:ok, contents} ->
