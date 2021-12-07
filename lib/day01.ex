@@ -14,16 +14,11 @@ defmodule AOC2021.DAY01 do
   end
 
   def open_file_contents(path) do
-    Logger.info("Opening input file")
-
     case File.read(path) do
       {:ok, input} ->
-        contents = input |> String.split("\n", trim: true) |> Enum.map(&String.to_integer/1)
-        Logger.info("Input Count: #{Enum.count(contents)}")
-        {:ok, contents}
+        {:ok, input |> String.split("\n", trim: true) |> Enum.map(&String.to_integer/1)}
 
       {:error, error} ->
-        Logger.error("Error reading file: #{error}")
         {:error, error}
     end
   end
