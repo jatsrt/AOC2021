@@ -75,14 +75,13 @@ defmodule AOC2021.DAY09 do
   end
 
   def find_basins([low_point | low_points], all_points, acc) do
-    basin_size = calculate_basin(low_point, all_points, nil, %{})
+    basin_size = calculate_basin(low_point, all_points, %{})
     find_basins(low_points, all_points, [basin_size | acc])
   end
 
   def find_basins([], _, acc), do: acc
 
-  def calculate_basin({{row, column} = key, value}, all_points, nil, acc)
-      when value < 9 and row >= 0 and column >= 0 and row < 100 and column < 100 do
+  def calculate_basin({{row, column} = key, value}, all_points, acc) when value != 9 do
     up_key = {row - 1, column}
     up_value = Map.get(all_points, up_key, 9)
 
@@ -98,36 +97,31 @@ defmodule AOC2021.DAY09 do
     acc = Map.put(acc, key, value)
 
     acc =
-      calculate_basin(
-        {up_key, up_value},
-        all_points,
-        Map.get(acc, up_key, nil),
-        acc
-      )
+      case Map.get(acc, up_key, nil) do
+        nil -> calculate_basin({up_key, up_value}, all_points, acc)
+        _ -> acc
+      end
 
     acc =
-      calculate_basin(
-        {down_key, down_value},
-        all_points,
-        Map.get(acc, down_key, nil),
-        acc
-      )
+      case Map.get(acc, down_key, nil) do
+        nil -> calculate_basin({down_key, down_value}, all_points, acc)
+        _ -> acc
+      end
 
     acc =
-      calculate_basin(
-        {left_key, left_value},
-        all_points,
-        Map.get(acc, left_key, nil),
-        acc
-      )
+      case Map.get(acc, left_key, nil) do
+        nil -> calculate_basin({left_key, left_value}, all_points, acc)
+        _ -> acc
+      end
 
-    calculate_basin(
-      {right_key, right_value},
-      all_points,
-      Map.get(acc, right_key, nil),
-      acc
-    )
+    acc =
+      case Map.get(acc, right_key, nil) do
+        nil -> calculate_basin({right_key, right_value}, all_points, acc)
+        _ -> acc
+      end
+
+    acc
   end
 
-  def calculate_basin(_, _, _, acc), do: acc
+  def calculate_basin(_, _, acc), do: acc
 end
