@@ -52,38 +52,29 @@ defmodule AOC2021.DAY05 do
   end
 
   def fill_matrix([[x1, y1, x2, y2] | t], matrix, diagonal) do
-    fill_matrix(
-      t,
-      follow_line(x1..x2 |> Enum.to_list(), y1..y2 |> Enum.to_list(), matrix, diagonal),
-      diagonal
-    )
+    matrix = follow_line(x1..x2 |> Enum.to_list(), y1..y2 |> Enum.to_list(), matrix, diagonal)
+    fill_matrix(t, matrix, diagonal)
   end
 
   def fill_matrix([], base_mtrix, _), do: base_mtrix
 
-  def follow_line([x], [y], matrix, _) do
-    put_in(matrix[x][y], matrix[x][y] + 1)
-    # matrix
-  end
+  @spec follow_line(nonempty_maybe_improper_list, nonempty_maybe_improper_list, any, false) :: any
+  def follow_line([x | t], [y], matrix, diagonal),
+    do: follow_line(t, [y], put_in(matrix[x][y], matrix[x][y] + 1), diagonal)
 
-  def follow_line([x | t], [y], matrix, diagonal) do
-    follow_line(t, [y], put_in(matrix[x][y], matrix[x][y] + 1), diagonal)
-  end
+  def follow_line([x], [y | t], matrix, diagonal),
+    do: follow_line([x], t, put_in(matrix[x][y], matrix[x][y] + 1), diagonal)
 
-  def follow_line([x], [y | t], matrix, diagonal) do
-    follow_line([x], t, put_in(matrix[x][y], matrix[x][y] + 1), diagonal)
-  end
+  def follow_line([x | xt], [y | yt], matrix, true),
+    do: follow_line(xt, yt, put_in(matrix[x][y], matrix[x][y] + 1), true)
 
-  def follow_line([x | xt], [y | yt], matrix, diagonal) do
-    case diagonal do
-      true -> follow_line(xt, yt, put_in(matrix[x][y], matrix[x][y] + 1), diagonal)
-      false -> matrix
-    end
-  end
+  def follow_line([_ | _], [_ | _], matrix, false), do: matrix
+  def follow_line([x], [y], matrix, _), do: put_in(matrix[x][y], matrix[x][y] + 1)
+  def follow_line([], [_], matrix, _), do: matrix
+  def follow_line([_], [], matrix, _), do: matrix
 
-  def count_overlap([h | t], acc) do
-    count_overlap(t, acc + (h |> Enum.map(&count_point/1) |> Enum.sum()))
-  end
+  def count_overlap([h | t], acc),
+    do: count_overlap(t, acc + (h |> Enum.map(&count_point/1) |> Enum.sum()))
 
   def count_overlap([], acc), do: {:ok, acc}
 
