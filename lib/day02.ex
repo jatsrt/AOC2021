@@ -6,10 +6,10 @@ defmodule AOC2021.DAY02 do
 
     case open_file_contents("inputs/day02.input") do
       {:ok, contents} ->
-        {:ok, depth, hp} = calculate(contents, 0, 0)
+        {:ok, depth, hp} = calculate(contents)
         Logger.info("Part One - Depth:#{depth} HP:#{hp} Result:#{hp * depth}")
 
-        {:ok, depth, hp, aim} = calculate(contents, 0, 0, 0)
+        {:ok, depth, hp, aim} = calculate_with_aim(contents)
         Logger.info("Part Two - Aim:#{aim} Depth:#{depth} HP:#{hp} Resut:#{hp * depth}")
 
         {:ok}
@@ -19,7 +19,7 @@ defmodule AOC2021.DAY02 do
     end
   end
 
-  def open_file_contents(path) do
+  defp open_file_contents(path) do
     case File.read(path) do
       {:ok, input} ->
         {:ok,
@@ -33,16 +33,22 @@ defmodule AOC2021.DAY02 do
     end
   end
 
-  def calculate([[:up, a] | t], depth, hp), do: calculate(t, depth - a, hp)
-  def calculate([[:down, a] | t], depth, hp), do: calculate(t, depth + a, hp)
-  def calculate([[:forward, a] | t], depth, hp), do: calculate(t, depth, hp + a)
-  def calculate([], depth, hp), do: {:ok, depth, hp}
+  defp calculate(list, depth \\ 0, hp \\ 0)
+  defp calculate([[:up, a] | t], depth, hp), do: calculate(t, depth - a, hp)
+  defp calculate([[:down, a] | t], depth, hp), do: calculate(t, depth + a, hp)
+  defp calculate([[:forward, a] | t], depth, hp), do: calculate(t, depth, hp + a)
+  defp calculate([], depth, hp), do: {:ok, depth, hp}
 
-  def calculate([[:up, a] | t], depth, hp, aim), do: calculate(t, depth, hp, aim - a)
-  def calculate([[:down, a] | t], depth, hp, aim), do: calculate(t, depth, hp, aim + a)
+  defp calculate_with_aim(list, depth \\ 0, hp \\ 0, aim \\ 0)
 
-  def calculate([[:forward, a] | t], depth, hp, aim),
-    do: calculate(t, depth + aim * a, hp + a, aim)
+  defp calculate_with_aim([[:up, a] | t], depth, hp, aim),
+    do: calculate_with_aim(t, depth, hp, aim - a)
 
-  def calculate([], depth, hp, aim), do: {:ok, depth, hp, aim}
+  defp calculate_with_aim([[:down, a] | t], depth, hp, aim),
+    do: calculate_with_aim(t, depth, hp, aim + a)
+
+  defp calculate_with_aim([[:forward, a] | t], depth, hp, aim),
+    do: calculate_with_aim(t, depth + aim * a, hp + a, aim)
+
+  defp calculate_with_aim([], depth, hp, aim), do: {:ok, depth, hp, aim}
 end

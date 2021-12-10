@@ -24,7 +24,7 @@ defmodule AOC2021.DAY07 do
     end
   end
 
-  def open_file_contents(path) do
+  defp open_file_contents(path) do
     case File.read(path) do
       {:ok, input} ->
         {:ok, input |> String.split(",") |> Enum.map(&String.to_integer/1)}
@@ -34,9 +34,9 @@ defmodule AOC2021.DAY07 do
     end
   end
 
-  def fuel(positions, new_position, ranged: false),
+  defp fuel(positions, new_position, ranged: false),
     do: positions |> Enum.map(fn p -> abs(p - new_position) end) |> Enum.sum()
 
-  def fuel(positions, new_position, ranged: true),
+  defp fuel(positions, new_position, ranged: true),
     do: positions |> Enum.map(fn p -> 0..abs(p - new_position) |> Enum.sum() end) |> Enum.sum()
 end

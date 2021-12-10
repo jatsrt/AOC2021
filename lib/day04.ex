@@ -8,11 +8,11 @@ defmodule AOC2021.DAY04 do
       {:ok, contents} ->
         [balls, cards] = generate_bingo_game(contents, false)
         {:ok, ball, card} = play_winning_bingo(cards, balls)
-        card_sum = calculate_sum(card, 0)
+        card_sum = calculate_sum(card)
         Logger.info("Part One - Ball: #{ball} Card Sum: #{card_sum} Answer: #{card_sum * ball}")
 
         {:ok, ball, card} = play_losing_bingo(cards, balls)
-        card_sum = calculate_sum(card, 0)
+        card_sum = calculate_sum(card)
 
         Logger.info("Part Two - Ball: #{ball} Card Sum: #{card_sum} Answer: #{card_sum * ball}")
 
@@ -23,7 +23,7 @@ defmodule AOC2021.DAY04 do
     end
   end
 
-  def open_file_contents(path) do
+  defp open_file_contents(path) do
     case File.read(path) do
       {:ok, input} ->
         {:ok, input |> String.split("\n", trim: true)}
@@ -33,7 +33,7 @@ defmodule AOC2021.DAY04 do
     end
   end
 
-  def generate_bingo_game(contents, default) do
+  defp generate_bingo_game(contents, default) do
     [all_balls | all_cards] = contents
     balls = all_balls |> String.split(",") |> Enum.map(&String.to_integer/1)
 
@@ -53,7 +53,7 @@ defmodule AOC2021.DAY04 do
     [balls, cards]
   end
 
-  def play_winning_bingo(cards, [ball | balls]) do
+  defp play_winning_bingo(cards, [ball | balls]) do
     cards = Enum.map(cards, fn card -> card |> Enum.map(&daub(&1, ball, [])) end)
 
     case find_winning_card(cards) do
@@ -62,12 +62,12 @@ defmodule AOC2021.DAY04 do
     end
   end
 
-  def play_winning_bingo(_, []), do: {:ok}
+  defp play_winning_bingo(_, []), do: {:ok}
 
-  def play_losing_bingo(cards, [ball | balls]) do
-    cards = Enum.map(cards, fn card -> card |> Enum.map(&daub(&1, ball, [])) end)
+  defp play_losing_bingo(cards, [ball | balls]) do
+    cards = Enum.map(cards, fn card -> card |> Enum.map(&daub(&1, ball)) end)
 
-    case filter_winning_cards(cards, []) do
+    case filter_winning_cards(cards) do
       [] ->
         [card] = cards
         {:ok, ball, card}
@@ -77,9 +77,9 @@ defmodule AOC2021.DAY04 do
     end
   end
 
-  def play_losing_bingo(_, []), do: {:none}
+  defp play_losing_bingo(_, []), do: {:none}
 
-  def find_winning_card([card | cards]) do
+  defp find_winning_card([card | cards]) do
     case find_winning_row_column(card) do
       {:ok} ->
         {:ok, card}
@@ -92,34 +92,39 @@ defmodule AOC2021.DAY04 do
     end
   end
 
-  def find_winning_card([]), do: {:skip}
+  defp find_winning_card([]), do: {:skip}
 
-  def find_winning_row_column([row | rows]) do
+  defp find_winning_row_column([row | rows]) do
     case row |> Enum.reduce(true, fn {_, b}, acc -> b && acc end) do
       false -> find_winning_row_column(rows)
       true -> {:ok}
     end
   end
 
-  def find_winning_row_column([]), do: {:skip}
+  defp find_winning_row_column([]), do: {:skip}
 
-  def filter_winning_cards([card | cards], acc) do
+  defp filter_winning_cards(list, acc \\ [])
+
+  defp filter_winning_cards([card | cards], acc) do
     case find_winning_card([card]) do
       {:ok, _card} -> filter_winning_cards(cards, acc)
       {:skip} -> filter_winning_cards(cards, [card] ++ acc)
     end
   end
 
-  def filter_winning_cards([], acc), do: acc
+  defp filter_winning_cards([], acc), do: acc
 
-  def calculate_sum([row | rows], acc),
+  defp calculate_sum(list, acc \\ 0)
+
+  defp calculate_sum([row | rows], acc),
     do: calculate_sum(rows, Enum.reduce(row, 0, &reduce_val/2) + acc)
 
-  def calculate_sum([], acc), do: acc
+  defp calculate_sum([], acc), do: acc
 
-  def reduce_val({_, true}, acc), do: acc
-  def reduce_val({v, false}, acc), do: v + acc
+  defp reduce_val({_, true}, acc), do: acc
+  defp reduce_val({v, false}, acc), do: v + acc
 
-  def daub([{n, b} | t], ball, acc), do: daub(t, ball, [{n, b || n == ball}] ++ acc)
-  def daub([], _, acc), do: acc
+  defp daub(list, ball, acc \\ [])
+  defp daub([{n, b} | t], ball, acc), do: daub(t, ball, [{n, b || n == ball}] ++ acc)
+  defp daub([], _, acc), do: acc
 end

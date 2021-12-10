@@ -64,7 +64,7 @@ defmodule AOC2021.DAY06 do
     end
   end
 
-  def open_file_contents(path) do
+  defp open_file_contents(path) do
     case File.read(path) do
       {:ok, input} ->
         {:ok, input |> String.split(",") |> Enum.map(&String.to_integer/1)}

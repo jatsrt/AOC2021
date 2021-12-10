@@ -13,7 +13,7 @@ defmodule AOC2021.DAY09 do
 
         Logger.info("Part One: Risk Sum: #{sum_points}")
 
-        basins = find_basins(low_points, all_points, [])
+        basins = find_basins(low_points, all_points)
 
         basin_lengths =
           basins
@@ -31,12 +31,11 @@ defmodule AOC2021.DAY09 do
     end
   end
 
-  def open_file_contents(path) do
+  defp open_file_contents(path) do
     case File.read(path) do
       {:ok, input} ->
         rows = input |> String.split("\n")
-        encoded_rows = encode_rows(rows, 0, %{})
-
+        encoded_rows = encode_rows(rows, 0)
         {:ok, encoded_rows}
 
       {:error, error} ->
@@ -44,14 +43,16 @@ defmodule AOC2021.DAY09 do
     end
   end
 
-  def encode_rows([row | rows], current_row, acc) do
+  defp encode_rows(list, current, acc \\ %{})
+
+  defp encode_rows([row | rows], current_row, acc) do
     acc = encode_row(row |> String.graphemes(), current_row, 0, acc)
     encode_rows(rows, current_row + 1, acc)
   end
 
-  def encode_rows([], _, acc), do: acc
+  defp encode_rows([], _, acc), do: acc
 
-  def encode_row([h | t], current_row, current_column, acc) do
+  defp encode_row([h | t], current_row, current_column, acc) do
     encode_row(
       t,
       current_row,
@@ -60,9 +61,9 @@ defmodule AOC2021.DAY09 do
     )
   end
 
-  def encode_row([], _, _, acc), do: acc
+  defp encode_row([], _, _, acc), do: acc
 
-  def find_low({{row, column}, value} = location, locations) do
+  defp find_low({{row, column}, value} = location, locations) do
     up = Map.get(locations, {row - 1, column}, 9)
     down = Map.get(locations, {row + 1, column}, 9)
     left = Map.get(locations, {row, column - 1}, 9)
@@ -74,14 +75,18 @@ defmodule AOC2021.DAY09 do
     end
   end
 
-  def find_basins([low_point | low_points], all_points, acc) do
-    basin_size = calculate_basin(low_point, all_points, %{})
+  defp find_basins(list, all_points, acc \\ [])
+
+  defp find_basins([low_point | low_points], all_points, acc) do
+    basin_size = calculate_basin(low_point, all_points)
     find_basins(low_points, all_points, [basin_size | acc])
   end
 
-  def find_basins([], _, acc), do: acc
+  defp find_basins([], _, acc), do: acc
 
-  def calculate_basin({{row, column} = key, value}, all_points, acc) when value != 9 do
+  defp calculate_basin(item, all_points, acc \\ %{})
+
+  defp calculate_basin({{row, column} = key, value}, all_points, acc) when value != 9 do
     up_key = {row - 1, column}
     up_value = Map.get(all_points, up_key, 9)
 
@@ -123,5 +128,5 @@ defmodule AOC2021.DAY09 do
     acc
   end
 
-  def calculate_basin(_, _, acc), do: acc
+  defp calculate_basin(_, _, acc), do: acc
 end

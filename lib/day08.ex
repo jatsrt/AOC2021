@@ -128,7 +128,7 @@ defmodule AOC2021.DAY08 do
 
         Logger.info("Part One - Apperances: #{appearances}")
 
-        {:ok, output_numbers} = find_output_number(outputs, [])
+        {:ok, output_numbers} = find_output_number(outputs)
         Logger.info("Part 2 - Count #{output_numbers |> Enum.sum()}")
 
         {:ok}
@@ -138,7 +138,7 @@ defmodule AOC2021.DAY08 do
     end
   end
 
-  def open_file_contents(path) do
+  defp open_file_contents(path) do
     case File.read(path) do
       {:ok, input} ->
         outputs_raw =
@@ -168,7 +168,9 @@ defmodule AOC2021.DAY08 do
     end
   end
 
-  def find_output_number([%Output{segments: segments, signals: signals} | t], acc) do
+  defp find_output_number(output, acc \\ [])
+
+  defp find_output_number([%Output{segments: segments, signals: signals} | t], acc) do
     # Do what is easy and identify 1, 4, 7, 8
     known_signals = signals |> Enum.filter(&(!is_nil(&1.value)))
 
@@ -193,7 +195,7 @@ defmodule AOC2021.DAY08 do
     find_output_number(t, [output_number | acc])
   end
 
-  def find_output_number([], acc), do: {:ok, acc}
+  defp find_output_number([], acc), do: {:ok, acc}
 
   # 1
 end
