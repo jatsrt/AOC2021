@@ -6,15 +6,28 @@ defmodule AOC2021.DAY05 do
 
     case open_file_contents("inputs/day05.input") do
       {:ok, contents} ->
-        base_matrix = generate_matrix(0, 1000, [])
+        base_matrix =
+          0..999
+          |> Enum.map(fn row -> {row, 0..999 |> Enum.map(fn col -> {col, 0} end) |> Map.new()} end)
+          |> Map.new()
 
-        {:ok, matrix} = contents |> fill_matrix(base_matrix, false)
-        {:ok, count} = matrix |> count_overlap(0)
-        Logger.info("Part One - Count #{count}")
+        filled_matrix = fill_matrix(contents, base_matrix, false)
 
-        {:ok, matrix} = contents |> fill_matrix(base_matrix, true)
-        {:ok, count} = matrix |> count_overlap(0)
-        Logger.info("Part Two - Count #{count}")
+        {:ok, overlap_count} =
+          filled_matrix
+          |> Enum.map(fn {_, v} -> v |> Enum.map(fn {_, v} -> v end) end)
+          |> count_overlap(0)
+
+        Logger.info("Part One - Overlap Count #{overlap_count}")
+
+        filled_matrix = fill_matrix(contents, base_matrix, true)
+
+        {:ok, overlap_count} =
+          filled_matrix
+          |> Enum.map(fn {_, v} -> v |> Enum.map(fn {_, v} -> v end) end)
+          |> count_overlap(0)
+
+        Logger.info("Part Two - Overlap Count #{overlap_count}")
 
         {:ok}
 
@@ -38,74 +51,35 @@ defmodule AOC2021.DAY05 do
     end
   end
 
-  def generate_matrix(count, size, acc) when count < size,
-    do: generate_matrix(count + 1, size, [List.duplicate(0, size) | acc])
-
-  def generate_matrix(_, _, acc), do: acc
-
-  def fill_matrix([h | t], matrix, diagonal),
-    do: fill_matrix(t, fill_matrix_point(h, matrix, diagonal), diagonal)
-
-  def fill_matrix([], matrix, _), do: {:ok, matrix}
-
-  # Right
-  def fill_matrix_point([x1, y1, x2, y2], matrix, diagonal) when x1 < x2 and y1 == y2 do
-    matrix = List.update_at(matrix, y1, fn row -> List.update_at(row, x1, &(&1 + 1)) end)
-    fill_matrix_point([x1 + 1, y1, x2, y2], matrix, diagonal)
+  def fill_matrix([[x1, y1, x2, y2] | t], matrix, diagonal) do
+    fill_matrix(
+      t,
+      follow_line(x1..x2 |> Enum.to_list(), y1..y2 |> Enum.to_list(), matrix, diagonal),
+      diagonal
+    )
   end
 
-  # Left
-  def fill_matrix_point([x1, y1, x2, y2], matrix, diagonal) when x1 > x2 and y1 == y2 do
-    matrix = List.update_at(matrix, y1, fn row -> List.update_at(row, x1, &(&1 + 1)) end)
-    fill_matrix_point([x1 - 1, y1, x2, y2], matrix, diagonal)
+  def fill_matrix([], base_mtrix, _), do: base_mtrix
+
+  def follow_line([x], [y], matrix, _) do
+    put_in(matrix[x][y], matrix[x][y] + 1)
+    # matrix
   end
 
-  # Up
-  def fill_matrix_point([x1, y1, x2, y2], matrix, diagonal) when x1 == x2 and y1 < y2 do
-    matrix = List.update_at(matrix, y1, fn row -> List.update_at(row, x1, &(&1 + 1)) end)
-    fill_matrix_point([x1, y1 + 1, x2, y2], matrix, diagonal)
+  def follow_line([x | t], [y], matrix, diagonal) do
+    follow_line(t, [y], put_in(matrix[x][y], matrix[x][y] + 1), diagonal)
   end
 
-  # Down
-  def fill_matrix_point([x1, y1, x2, y2], matrix, diagonal) when x1 == x2 and y1 > y2 do
-    matrix = List.update_at(matrix, y1, fn row -> List.update_at(row, x1, &(&1 + 1)) end)
-    fill_matrix_point([x1, y1 - 1, x2, y2], matrix, diagonal)
+  def follow_line([x], [y | t], matrix, diagonal) do
+    follow_line([x], t, put_in(matrix[x][y], matrix[x][y] + 1), diagonal)
   end
 
-  # Diagonal Up Right
-  def fill_matrix_point([x1, y1, x2, y2], matrix, diagonal)
-      when diagonal and x1 < x2 and y1 < y2 do
-    matrix = List.update_at(matrix, y1, fn row -> List.update_at(row, x1, &(&1 + 1)) end)
-    fill_matrix_point([x1 + 1, y1 + 1, x2, y2], matrix, diagonal)
+  def follow_line([x | xt], [y | yt], matrix, diagonal) do
+    case diagonal do
+      true -> follow_line(xt, yt, put_in(matrix[x][y], matrix[x][y] + 1), diagonal)
+      false -> matrix
+    end
   end
-
-  # Diagonal Up Left
-  def fill_matrix_point([x1, y1, x2, y2], matrix, diagonal)
-      when diagonal and x1 > x2 and y1 < y2 do
-    matrix = List.update_at(matrix, y1, fn row -> List.update_at(row, x1, &(&1 + 1)) end)
-    fill_matrix_point([x1 - 1, y1 + 1, x2, y2], matrix, diagonal)
-  end
-
-  # Diagonal Down Right
-  def fill_matrix_point([x1, y1, x2, y2], matrix, diagonal)
-      when diagonal and x1 < x2 and y1 > y2 do
-    matrix = List.update_at(matrix, y1, fn row -> List.update_at(row, x1, &(&1 + 1)) end)
-    fill_matrix_point([x1 + 1, y1 - 1, x2, y2], matrix, diagonal)
-  end
-
-  # Diagonal Down Left
-  def fill_matrix_point([x1, y1, x2, y2], matrix, diagonal)
-      when diagonal and x1 > x2 and y1 > y2 do
-    matrix = List.update_at(matrix, y1, fn row -> List.update_at(row, x1, &(&1 + 1)) end)
-    fill_matrix_point([x1 - 1, y1 - 1, x2, y2], matrix, diagonal)
-  end
-
-  # End Point
-  def fill_matrix_point([x1, y1, x2, y2], matrix, _) when x1 == x2 and y1 == y2 do
-    List.update_at(matrix, y1, fn row -> List.update_at(row, x1, &(&1 + 1)) end)
-  end
-
-  def fill_matrix_point(_, matrix, _), do: matrix
 
   def count_overlap([h | t], acc) do
     count_overlap(t, acc + (h |> Enum.map(&count_point/1) |> Enum.sum()))
