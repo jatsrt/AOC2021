@@ -1,46 +1,15 @@
 defmodule AOC2021.DAY03 do
-  require Logger
-
   def run() do
-    Logger.info("AOC 2021 Day 3")
+    IO.puts("AOC 2021 Day 3")
+    contents = "inputs/day03.input" |> File.read!() |> String.split("\n", trim: true)
 
-    case open_file_contents("inputs/day03.input") do
-      {:ok, contents} ->
-        {gamma_result, _} =
-          process_list(contents, 0, 12, &gamma/1) |> Enum.join() |> Integer.parse(2)
+    {gamma_result, _} = process_list(contents, 0, 12, &gamma/1) |> Enum.join() |> Integer.parse(2)
+    {epsilon_result, _} = process_list(contents, 0, 12, &epsilon/1) |> Enum.join() |> Integer.parse(2)
+    IO.puts("Part One - Gamma:#{gamma_result} Epsilon:#{epsilon_result} Product:#{gamma_result * epsilon_result}")
 
-        {epsilon_result, _} =
-          process_list(contents, 0, 12, &epsilon/1) |> Enum.join() |> Integer.parse(2)
-
-        Logger.info(
-          "Part One - Gamma:#{gamma_result} Epsilon:#{epsilon_result} Product:#{gamma_result * epsilon_result}"
-        )
-
-        {oxygen_result, _} =
-          process_and_filter_list(contents, 0, 12, &gamma/1) |> Enum.join() |> Integer.parse(2)
-
-        {co2_result, _} =
-          process_and_filter_list(contents, 0, 12, &epsilon/1) |> Enum.join() |> Integer.parse(2)
-
-        Logger.info(
-          "Part Two - Oxygen:#{oxygen_result} CO2:#{co2_result} Product:#{oxygen_result * co2_result}"
-        )
-
-        {:ok}
-
-      {:error, _error} ->
-        {:error}
-    end
-  end
-
-  defp open_file_contents(path) do
-    case File.read(path) do
-      {:ok, input} ->
-        {:ok, input |> String.split("\n", trim: true)}
-
-      {:error, error} ->
-        {:error, error}
-    end
+    {oxygen_result, _} = process_and_filter_list(contents, 0, 12, &gamma/1) |> Enum.join() |> Integer.parse(2)
+    {co2_result, _} = process_and_filter_list(contents, 0, 12, &epsilon/1) |> Enum.join() |> Integer.parse(2)
+    IO.puts("Part Two - Oxygen:#{oxygen_result} CO2:#{co2_result} Product:#{oxygen_result * co2_result}")
   end
 
   defp process_and_filter_list(list, position, length, f)
@@ -74,10 +43,7 @@ defmodule AOC2021.DAY03 do
   defp process_list(_, _, _, _, acc), do: acc |> Enum.reverse()
 
   defp accumulate(list, postion, acc \\ 0)
-
-  defp accumulate([h | t], position, acc),
-    do: accumulate(t, position, acc + value_of(h |> String.at(position)))
-
+  defp accumulate([h | t], position, acc), do: accumulate(t, position, acc + value_of(h |> String.at(position)))
   defp accumulate([], _, acc), do: acc
 
   defp value_of("0"), do: -1

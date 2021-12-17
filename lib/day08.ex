@@ -109,63 +109,46 @@ defmodule AOC2021.DAY08 do
   def run() do
     Logger.info("AOC 2021 Day 8")
 
-    case open_file_contents("inputs/day08.input") do
-      {:ok, outputs} ->
-        segments = outputs |> Enum.map(&Map.get(&1, :segments))
+    outputs =
+      "inputs/day08.input"
+      |> File.read!()
+      |> String.trim()
+      |> String.split("\n")
+      |> Enum.map(&String.split(&1, "|"))
+      |> Enum.map(fn [signals, segments] ->
+        %Output{
+          signals:
+            signals
+            |> String.trim()
+            |> String.split(" ")
+            |> Enum.map(&(%Encoding{} |> Encoding.from_string(&1))),
+          segments:
+            segments
+            |> String.trim()
+            |> String.split(" ")
+            |> Enum.map(&(%Encoding{} |> Encoding.from_string(&1)))
+        }
+      end)
 
-        # Simple brute force answer
-        appearances =
-          segments
-          |> Enum.map(fn segment ->
-            segment
-            |> Enum.filter(fn segment ->
-              len = length(segment.segments)
-              len == 2 || len == 4 || len == 3 || len == 7
-            end)
-          end)
-          |> Enum.map(&length/1)
-          |> Enum.sum()
+    segments = outputs |> Enum.map(&Map.get(&1, :segments))
 
-        Logger.info("Part One - Apperances: #{appearances}")
+    # Simple brute force answer
+    appearances =
+      segments
+      |> Enum.map(fn segment ->
+        segment
+        |> Enum.filter(fn segment ->
+          len = length(segment.segments)
+          len == 2 || len == 4 || len == 3 || len == 7
+        end)
+      end)
+      |> Enum.map(&length/1)
+      |> Enum.sum()
 
-        {:ok, output_numbers} = find_output_number(outputs)
-        Logger.info("Part 2 - Count #{output_numbers |> Enum.sum()}")
+    Logger.info("Part One - Apperances: #{appearances}")
 
-        {:ok}
-
-      {:error, _error} ->
-        {:error}
-    end
-  end
-
-  defp open_file_contents(path) do
-    case File.read(path) do
-      {:ok, input} ->
-        outputs_raw =
-          input |> String.trim() |> String.split("\n") |> Enum.map(&String.split(&1, "|"))
-
-        outputs =
-          outputs_raw
-          |> Enum.map(fn [signals, segments] ->
-            %Output{
-              signals:
-                signals
-                |> String.trim()
-                |> String.split(" ")
-                |> Enum.map(&(%Encoding{} |> Encoding.from_string(&1))),
-              segments:
-                segments
-                |> String.trim()
-                |> String.split(" ")
-                |> Enum.map(&(%Encoding{} |> Encoding.from_string(&1)))
-            }
-          end)
-
-        {:ok, outputs}
-
-      {:error, error} ->
-        {:error, error}
-    end
+    {:ok, output_numbers} = find_output_number(outputs)
+    Logger.info("Part 2 - Count #{output_numbers |> Enum.sum()}")
   end
 
   defp find_output_number(output, acc \\ [])

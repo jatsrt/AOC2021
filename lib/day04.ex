@@ -1,36 +1,17 @@
 defmodule AOC2021.DAY04 do
-  require Logger
-
   def run() do
-    Logger.info("AOC 2021 Day 4")
+    IO.puts("AOC 2021 Day 4")
 
-    case open_file_contents("inputs/day04.input") do
-      {:ok, contents} ->
-        [balls, cards] = generate_bingo_game(contents, false)
-        {:ok, ball, card} = play_winning_bingo(cards, balls)
-        card_sum = calculate_sum(card)
-        Logger.info("Part One - Ball: #{ball} Card Sum: #{card_sum} Answer: #{card_sum * ball}")
+    contents = "inputs/day04.input" |> File.read!() |> String.split("\n", trim: true)
 
-        {:ok, ball, card} = play_losing_bingo(cards, balls)
-        card_sum = calculate_sum(card)
+    [balls, cards] = generate_bingo_game(contents, false)
+    {:ok, ball, card} = play_winning_bingo(cards, balls)
+    card_sum = calculate_sum(card)
+    IO.puts("Part One - Ball: #{ball} Card Sum: #{card_sum} Answer: #{card_sum * ball}")
 
-        Logger.info("Part Two - Ball: #{ball} Card Sum: #{card_sum} Answer: #{card_sum * ball}")
-
-        {:ok}
-
-      {:error, _error} ->
-        {:error}
-    end
-  end
-
-  defp open_file_contents(path) do
-    case File.read(path) do
-      {:ok, input} ->
-        {:ok, input |> String.split("\n", trim: true)}
-
-      {:error, error} ->
-        {:error, error}
-    end
+    {:ok, ball, card} = play_losing_bingo(cards, balls)
+    card_sum = calculate_sum(card)
+    IO.puts("Part Two - Ball: #{ball} Card Sum: #{card_sum} Answer: #{card_sum * ball}")
   end
 
   defp generate_bingo_game(contents, default) do
@@ -115,10 +96,7 @@ defmodule AOC2021.DAY04 do
   defp filter_winning_cards([], acc), do: acc
 
   defp calculate_sum(list, acc \\ 0)
-
-  defp calculate_sum([row | rows], acc),
-    do: calculate_sum(rows, Enum.reduce(row, 0, &reduce_val/2) + acc)
-
+  defp calculate_sum([row | rows], acc), do: calculate_sum(rows, Enum.reduce(row, 0, &reduce_val/2) + acc)
   defp calculate_sum([], acc), do: acc
 
   defp reduce_val({_, true}, acc), do: acc

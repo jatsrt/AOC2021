@@ -1,46 +1,18 @@
 defmodule AOC2021.DAY09 do
-  require Logger
-
   def run() do
-    Logger.info("AOC 2021 Day 9")
+    IO.puts("AOC 2021 Day 9")
 
-    case open_file_contents("inputs/day09.input") do
-      {:ok, all_points} ->
-        low_points =
-          all_points |> Enum.map(&find_low(&1, all_points)) |> Enum.filter(&(!is_nil(&1)))
+    all_points = "inputs/day09.input" |> File.read!() |> String.split("\n")
+    all_points = all_points |> encode_rows(0)
 
-        sum_points = low_points |> Enum.map(fn {_, v} -> v + 1 end) |> Enum.sum()
+    low_points = all_points |> Enum.map(&find_low(&1, all_points)) |> Enum.filter(&(!is_nil(&1)))
+    sum_points = low_points |> Enum.map(fn {_, v} -> v + 1 end) |> Enum.sum()
+    IO.puts("Part One: Risk Sum: #{sum_points}")
 
-        Logger.info("Part One: Risk Sum: #{sum_points}")
+    basins = find_basins(low_points, all_points)
 
-        basins = find_basins(low_points, all_points)
-
-        basin_lengths =
-          basins
-          |> Enum.map(&(Map.values(&1) |> length))
-          |> Enum.sort()
-          |> Enum.slice(-3..-1)
-          |> Enum.product()
-
-        Logger.info("Part Two - Basins #{basin_lengths}")
-
-        {:ok}
-
-      {:error, _error} ->
-        {:error}
-    end
-  end
-
-  defp open_file_contents(path) do
-    case File.read(path) do
-      {:ok, input} ->
-        rows = input |> String.split("\n")
-        encoded_rows = encode_rows(rows, 0)
-        {:ok, encoded_rows}
-
-      {:error, error} ->
-        {:error, error}
-    end
+    basin_lengths = basins |> Enum.map(&(Map.values(&1) |> length)) |> Enum.sort() |> Enum.slice(-3..-1) |> Enum.product()
+    IO.puts("Part Two - Basins #{basin_lengths}")
   end
 
   defp encode_rows(list, current, acc \\ %{})
@@ -53,12 +25,7 @@ defmodule AOC2021.DAY09 do
   defp encode_rows([], _, acc), do: acc
 
   defp encode_row([h | t], current_row, current_column, acc) do
-    encode_row(
-      t,
-      current_row,
-      current_column + 1,
-      acc |> Map.put({current_row, current_column}, h |> String.to_integer())
-    )
+    encode_row(t, current_row, current_column + 1, acc |> Map.put({current_row, current_column}, h |> String.to_integer()))
   end
 
   defp encode_row([], _, _, acc), do: acc

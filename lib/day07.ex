@@ -1,42 +1,17 @@
 defmodule AOC2021.DAY07 do
-  require Logger
-
   def run() do
-    Logger.info("AOC 2021 Day 7")
+    IO.puts("AOC 2021 Day 7")
 
-    case open_file_contents("inputs/day07.input") do
-      {:ok, contents} ->
-        {min, max} = contents |> Enum.min_max()
+    contents = "inputs/day07.input" |> File.read!() |> String.split(",") |> Enum.map(&String.to_integer/1)
+    {min, max} = contents |> Enum.min_max()
 
-        min_fuel_consumption =
-          min..max |> Enum.map(&fuel(contents, &1, ranged: false)) |> Enum.min()
+    min_fuel_consumption = min..max |> Enum.map(&fuel(contents, &1, ranged: false)) |> Enum.min()
+    IO.puts("Part One - Min Fuel #{min_fuel_consumption}")
 
-        Logger.info("Part One - Min Fuel #{min_fuel_consumption}")
-
-        min_fuel_consumption =
-          min..max |> Enum.map(&fuel(contents, &1, ranged: true)) |> Enum.min()
-
-        Logger.info("Part Two - Min Fuel #{min_fuel_consumption}")
-        {:ok}
-
-      {:error, _error} ->
-        {:error}
-    end
+    min_fuel_consumption = min..max |> Enum.map(&fuel(contents, &1, ranged: true)) |> Enum.min()
+    IO.puts("Part Two - Min Fuel #{min_fuel_consumption}")
   end
 
-  defp open_file_contents(path) do
-    case File.read(path) do
-      {:ok, input} ->
-        {:ok, input |> String.split(",") |> Enum.map(&String.to_integer/1)}
-
-      {:error, error} ->
-        {:error, error}
-    end
-  end
-
-  defp fuel(positions, new_position, ranged: false),
-    do: positions |> Enum.map(fn p -> abs(p - new_position) end) |> Enum.sum()
-
-  defp fuel(positions, new_position, ranged: true),
-    do: positions |> Enum.map(fn p -> 0..abs(p - new_position) |> Enum.sum() end) |> Enum.sum()
+  defp fuel(positions, new_position, ranged: false), do: positions |> Enum.map(fn p -> abs(p - new_position) end) |> Enum.sum()
+  defp fuel(positions, new_position, ranged: true), do: positions |> Enum.map(fn p -> 0..abs(p - new_position) |> Enum.sum() end) |> Enum.sum()
 end
