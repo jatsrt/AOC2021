@@ -18,7 +18,7 @@ defmodule AOC2021.DAY09 do
   defp encode_rows(list, current, acc \\ %{})
 
   defp encode_rows([row | rows], current_row, acc) do
-    acc = encode_row(row |> String.graphemes(), current_row, 0, acc)
+    acc = encode_row(row |> String.codepoints(), current_row, 0, acc)
     encode_rows(rows, current_row + 1, acc)
   end
 

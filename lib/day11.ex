@@ -54,7 +54,7 @@ defmodule AOC2021.DAY11 do
       "inputs/day11.input"
       |> File.read!()
       |> String.split("\n", trim: true)
-      |> Enum.map(&String.graphemes/1)
+      |> Enum.map(&String.codepoints/1)
       |> Enum.map(fn row -> row |> Enum.map(&String.to_integer/1) end)
 
     octopi = create_octopi(contents)

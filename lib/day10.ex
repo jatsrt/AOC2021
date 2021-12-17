@@ -1,7 +1,7 @@
 defmodule AOC2021.DAY10 do
   def run() do
     IO.puts("AOC 2021 Day 10")
-    lines = "inputs/day10.input" |> File.read!() |> String.split("\n") |> Enum.map(&String.graphemes/1)
+    lines = "inputs/day10.input" |> File.read!() |> String.split("\n") |> Enum.map(&String.codepoints/1)
 
     chunks = lines |> Enum.map(&find_chunks(&1))
     corrupt_lines = chunks |> Enum.filter(&filter_errors/1)
