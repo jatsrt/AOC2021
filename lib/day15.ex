@@ -27,12 +27,8 @@ defmodule AOC2021.DAY15 do
 
     path_cost =
       best_path
-      |> Enum.chunk_every(2, 1)
-      |> Enum.map(fn
-        [from, to] -> Graph.edge(graph, from, to) |> Map.get(:weight)
-        _ -> 0
-      end)
-      |> Enum.sum()
+      |> Enum.chunk_every(2, 1, :discard)
+      |> Enum.reduce(0, fn [from, to], sum -> sum + (Graph.edge(graph, from, to) |> Map.get(:weight)) end)
 
     IO.puts("Part One - #{path_cost}")
 
@@ -75,12 +71,8 @@ defmodule AOC2021.DAY15 do
 
     path_cost =
       best_path
-      |> Enum.chunk_every(2, 1)
-      |> Enum.map(fn
-        [from, to] -> Graph.edge(graph, from, to) |> Map.get(:weight)
-        _ -> 0
-      end)
-      |> Enum.sum()
+      |> Enum.chunk_every(2, 1, :discard)
+      |> Enum.reduce(0, fn [from, to], sum -> sum + (Graph.edge(graph, from, to) |> Map.get(:weight)) end)
 
     IO.puts("Part Two - #{path_cost}")
   end
@@ -88,8 +80,8 @@ defmodule AOC2021.DAY15 do
   defp add_edges(graph, {x, y} = vertex, risk_levels, mm_x, mm_y) do
     graph
     |> add_edge(vertex, {x + 1, y}, risk_levels, mm_x, mm_y)
-    |> add_edge(vertex, {x - 1, y}, risk_levels, mm_x, mm_y)
     |> add_edge(vertex, {x, y + 1}, risk_levels, mm_x, mm_y)
+    |> add_edge(vertex, {x - 1, y}, risk_levels, mm_x, mm_y)
     |> add_edge(vertex, {x, y - 1}, risk_levels, mm_x, mm_y)
   end
 
