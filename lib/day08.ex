@@ -1,6 +1,4 @@
 defmodule AOC2021.DAY08 do
-  require Logger
-
   defmodule Number do
     defstruct [:t, :m, :b, :tl, :tr, :bl, :br]
 
@@ -32,6 +30,8 @@ defmodule AOC2021.DAY08 do
 
   defmodule Encoding do
     defstruct value: nil, segments: [], number: %Number{}
+
+    def segments(%Encoding{segments: segments}), do: segments
 
     def from_string(%Encoding{segments: segments} = encoding, "a" <> t),
       do: from_string(%{encoding | segments: [:a | segments]}, t)
@@ -107,7 +107,7 @@ defmodule AOC2021.DAY08 do
   end
 
   def run() do
-    Logger.info("AOC 2021 Day 8")
+    IO.puts("AOC 2021 Day 8")
 
     outputs =
       "inputs/day08.input"
@@ -132,7 +132,6 @@ defmodule AOC2021.DAY08 do
 
     segments = outputs |> Enum.map(&Map.get(&1, :segments))
 
-    # Simple brute force answer
     appearances =
       segments
       |> Enum.map(fn segment ->
@@ -142,13 +141,12 @@ defmodule AOC2021.DAY08 do
           len == 2 || len == 4 || len == 3 || len == 7
         end)
       end)
-      |> Enum.map(&length/1)
-      |> Enum.sum()
+      |> Enum.reduce(0, fn s, acc -> acc + length(s) end)
 
-    Logger.info("Part One - Apperances: #{appearances}")
+    IO.puts("Part One - Apperances: #{appearances}")
 
     {:ok, output_numbers} = find_output_number(outputs)
-    Logger.info("Part 2 - Count #{output_numbers |> Enum.sum()}")
+    IO.puts("Part 2 - Count #{output_numbers |> Enum.sum()}")
   end
 
   defp find_output_number(output, acc \\ [])
@@ -179,6 +177,4 @@ defmodule AOC2021.DAY08 do
   end
 
   defp find_output_number([], acc), do: {:ok, acc}
-
-  # 1
 end

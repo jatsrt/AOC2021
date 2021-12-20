@@ -1,57 +1,33 @@
 defmodule AOC2021.DAY03 do
   def run() do
     IO.puts("AOC 2021 Day 3")
-    contents = "inputs/day03.input" |> File.read!() |> String.split("\n", trim: true)
 
-    {gamma_result, _} = process_list(contents, 0, 12, &gamma/1) |> Enum.join() |> Integer.parse(2)
-    {epsilon_result, _} = process_list(contents, 0, 12, &epsilon/1) |> Enum.join() |> Integer.parse(2)
-    IO.puts("Part One - Gamma:#{gamma_result} Epsilon:#{epsilon_result} Product:#{gamma_result * epsilon_result}")
+    bin_nums =
+      "inputs/day03.input"
+      |> File.read!()
+      |> String.split("\n", trim: true)
+      |> Enum.map(fn s -> s |> String.split("", trim: true) |> Enum.map(&String.to_integer/1) end)
 
-    {oxygen_result, _} = process_and_filter_list(contents, 0, 12, &gamma/1) |> Enum.join() |> Integer.parse(2)
-    {co2_result, _} = process_and_filter_list(contents, 0, 12, &epsilon/1) |> Enum.join() |> Integer.parse(2)
-    IO.puts("Part Two - Oxygen:#{oxygen_result} CO2:#{co2_result} Product:#{oxygen_result * co2_result}")
+    frequencies = bin_nums |> Enum.zip_with(&Enum.frequencies/1)
+    gamma = frequencies |> Enum.map(fn freqs -> if freqs[0] > freqs[1], do: "0", else: "1" end) |> Enum.join() |> String.to_integer(2)
+    epsilon = frequencies |> Enum.map(fn freqs -> if freqs[0] < freqs[1], do: "0", else: "1" end) |> Enum.join() |> String.to_integer(2)
+    IO.puts("Part One - Gamma:#{gamma} Epsilon:#{epsilon} Product:#{gamma * epsilon}")
+
+    o2 = process_list(bin_nums, :o2)
+    co2 = process_list(bin_nums, :co2)
+    IO.puts("Part Two - Oxygen:#{o2} CO2:#{co2} Product:#{o2 * co2}")
   end
 
-  defp process_and_filter_list(list, position, length, f)
-       when position < length and length(list) > 1 do
-    result = f.(accumulate(list, position, 0))
-    list = filter_list(list, result, position)
-    process_and_filter_list(list, position + 1, length, f)
+  defp process_list(list, sensor_type, count \\ 0)
+  defp process_list([bin_num], _, _), do: bin_num |> Enum.join() |> String.to_integer(2)
+
+  defp process_list(bin_nums, sensor_type, i) do
+    common_bit = bin_nums |> Enum.map(&Enum.at(&1, i)) |> Enum.frequencies() |> find_common(sensor_type)
+    found = bin_nums |> Enum.filter(&(Enum.at(&1, i) == common_bit))
+    process_list(found, sensor_type, i + 1)
   end
 
-  defp process_and_filter_list(list, _, _, _), do: list
-
-  defp filter_list(list, filter, position, acc \\ [])
-
-  defp filter_list([h | t], filter, position, acc) do
-    item = filter_item(h, h |> String.at(position) |> String.to_integer(), filter)
-    filter_list(t, filter, position, acc ++ item)
-  end
-
-  defp filter_list([], _, _, acc), do: acc
-
-  defp filter_item(item, a, b) when a == b, do: [item]
-  defp filter_item(_, _, _), do: []
-
-  defp process_list(list, position, length, f, acc \\ [])
-
-  defp process_list(list, position, length, f, acc) when position < length do
-    result = f.(accumulate(list, position))
-    process_list(list, position + 1, length, f, [result | acc])
-  end
-
-  defp process_list(_, _, _, _, acc), do: acc |> Enum.reverse()
-
-  defp accumulate(list, postion, acc \\ 0)
-  defp accumulate([h | t], position, acc), do: accumulate(t, position, acc + value_of(h |> String.at(position)))
-  defp accumulate([], _, acc), do: acc
-
-  defp value_of("0"), do: -1
-  defp value_of("1"), do: 1
-
-  defp gamma(v) when v >= 0, do: 1
-  defp gamma(_), do: 0
-
-  defp epsilon(v) when v < 0, do: 1
-  defp epsilon(_), do: 0
+  defp find_common(freqs, _) when map_size(freqs) == 1, do: freqs |> Map.keys() |> List.first()
+  defp find_common(freqs, :o2), do: if(freqs[0] <= freqs[1], do: 0, else: 1)
+  defp find_common(freqs, :co2), do: if(freqs[0] <= freqs[1], do: 1, else: 0)
 end

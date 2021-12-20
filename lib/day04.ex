@@ -2,107 +2,49 @@ defmodule AOC2021.DAY04 do
   def run() do
     IO.puts("AOC 2021 Day 4")
 
-    contents = "inputs/day04.input" |> File.read!() |> String.split("\n", trim: true)
+    [balls | cards] = "inputs/day04.input" |> File.read!() |> String.split("\n\n", trim: true)
+    balls = balls |> String.split(",", trim: true) |> Enum.map(&String.to_integer/1)
+    cards = cards |> Enum.map(fn card -> card |> String.split("\n", trim: true) |> Enum.map(fn row -> row |> String.split(" ", trim: true) |> Enum.map(&{String.to_integer(&1), false}) end) end)
 
-    [balls, cards] = generate_bingo_game(contents, false)
-    {:ok, ball, card} = play_winning_bingo(cards, balls)
-    card_sum = calculate_sum(card)
+    {ball, card} = play_win(balls, cards)
+    card_sum = card |> List.flatten() |> Enum.flat_map(fn {v, marked} -> if marked, do: [], else: [v] end) |> Enum.sum()
     IO.puts("Part One - Ball: #{ball} Card Sum: #{card_sum} Answer: #{card_sum * ball}")
 
-    {:ok, ball, card} = play_losing_bingo(cards, balls)
-    card_sum = calculate_sum(card)
+    {ball, card} = play_lose(balls, cards)
+    card_sum = card |> List.flatten() |> Enum.flat_map(fn {v, marked} -> if marked, do: [], else: [v] end) |> Enum.sum()
     IO.puts("Part Two - Ball: #{ball} Card Sum: #{card_sum} Answer: #{card_sum * ball}")
   end
 
-  defp generate_bingo_game(contents, default) do
-    [all_balls | all_cards] = contents
-    balls = all_balls |> String.split(",") |> Enum.map(&String.to_integer/1)
+  defp play_win([ball | balls], cards) do
+    cards = cards |> Enum.map(&daub(ball, &1))
+    winners = Enum.filter(cards, &complete?/1)
 
-    cards =
-      all_cards
-      |> Enum.chunk_every(5)
-      |> Enum.map(fn card ->
-        card
-        |> Enum.map(fn row ->
-          row
-          |> String.split()
-          |> Enum.map(&String.to_integer/1)
-          |> Enum.map(fn i -> {i, default} end)
-        end)
-      end)
-
-    [balls, cards]
-  end
-
-  defp play_winning_bingo(cards, [ball | balls]) do
-    cards = Enum.map(cards, fn card -> card |> Enum.map(&daub(&1, ball, [])) end)
-
-    case find_winning_card(cards) do
-      {:ok, card} -> {:ok, ball, card}
-      {:skip} -> play_winning_bingo(cards, balls)
+    if Enum.empty?(winners) do
+      play_win(balls, cards)
+    else
+      {ball, List.first(winners)}
     end
   end
 
-  defp play_winning_bingo(_, []), do: {:ok}
+  defp play_lose([ball | balls], cards) do
+    cards = cards |> Enum.map(&daub(ball, &1))
+    {winners, losers} = Enum.split_with(cards, &complete?/1)
 
-  defp play_losing_bingo(cards, [ball | balls]) do
-    cards = Enum.map(cards, fn card -> card |> Enum.map(&daub(&1, ball)) end)
-
-    case filter_winning_cards(cards) do
-      [] ->
-        [card] = cards
-        {:ok, ball, card}
-
-      cards ->
-        play_losing_bingo(cards, balls)
+    if Enum.empty?(losers) do
+      {ball, winners |> List.first()}
+    else
+      play_lose(balls, losers)
     end
   end
 
-  defp play_losing_bingo(_, []), do: {:none}
+  defp daub(ball, card), do: Enum.map(card, &daub_row(ball, &1))
 
-  defp find_winning_card([card | cards]) do
-    case find_winning_row_column(card) do
-      {:ok} ->
-        {:ok, card}
+  def daub_row(_, []), do: []
+  def daub_row(ball, [{n, _} | row]) when n == ball, do: [{n, true} | row]
+  def daub_row(ball, [cell | row]), do: [cell | daub_row(ball, row)]
 
-      {:skip} ->
-        case find_winning_row_column(card |> List.zip() |> Enum.map(&Tuple.to_list/1)) do
-          {:ok} -> {:ok, card}
-          {:skip} -> find_winning_card(cards)
-        end
-    end
-  end
-
-  defp find_winning_card([]), do: {:skip}
-
-  defp find_winning_row_column([row | rows]) do
-    case row |> Enum.reduce(true, fn {_, b}, acc -> b && acc end) do
-      false -> find_winning_row_column(rows)
-      true -> {:ok}
-    end
-  end
-
-  defp find_winning_row_column([]), do: {:skip}
-
-  defp filter_winning_cards(list, acc \\ [])
-
-  defp filter_winning_cards([card | cards], acc) do
-    case find_winning_card([card]) do
-      {:ok, _card} -> filter_winning_cards(cards, acc)
-      {:skip} -> filter_winning_cards(cards, [card] ++ acc)
-    end
-  end
-
-  defp filter_winning_cards([], acc), do: acc
-
-  defp calculate_sum(list, acc \\ 0)
-  defp calculate_sum([row | rows], acc), do: calculate_sum(rows, Enum.reduce(row, 0, &reduce_val/2) + acc)
-  defp calculate_sum([], acc), do: acc
-
-  defp reduce_val({_, true}, acc), do: acc
-  defp reduce_val({v, false}, acc), do: v + acc
-
-  defp daub(list, ball, acc \\ [])
-  defp daub([{n, b} | t], ball, acc), do: daub(t, ball, [{n, b || n == ball}] ++ acc)
-  defp daub([], _, acc), do: acc
+  def complete?(card),
+    do:
+      Enum.any?(card, fn row -> Enum.all?(row, fn {_, marked} -> marked end) end) ||
+        Enum.any?(Enum.zip_with(card, & &1), fn col -> Enum.all?(col, fn {_, marked} -> marked end) end)
 end
